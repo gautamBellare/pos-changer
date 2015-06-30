@@ -35,6 +35,7 @@
 
 var posChangers = posChangers ? posChangers : {};
 var classCollector = [];
+var cssCollector = [];
 var ele = [];
 var searchEle = [];
 var searchEleNum = [];
@@ -5531,30 +5532,41 @@ $("<style>")
                 var classi, topi, lefti;
                 var j = 0;
 
-                // get all css styles of the element
-                $.ajax({
-                    url: "../0.0_MerckEngage_Table_of_Contents/css/specific.css",
-                    dataType: "text",
-                    success: function(cssTexter) {
-                      var elm, node;
-                      
-                      // First, display
-                      // $("<pre></pre>").text(cssText).appendTo(document.body);
-                      console.log(cssTexter);
-                      // Then, apply
-                      // elm = document.createElement("div");
-                      // elm.innerHTML = "<style>" + cssText + "</style>";
-                      // document.body.appendChild(elm);
-                    }
+                //get all css styles of the element - WORKING - Gets all css for specific into a variable
+                    // $.ajax({
+                    //     url: "../0.0_MerckEngage_Table_of_Contents/css/specific.css",
+                    //     dataType: "text",
+                    //     success: function(cssTexter) {
+                    //       var elm, node;
+                    //       cssCollector = cssTexter;
+                          
+                    //       console.log(cssCollector);
+                    //     }
+                    // });
+                classi = test;
+                topi = $(this).position().top;
+                lefti = $(this).position().left;
+                var matchi = [];   
+                // Get all css associated with the document
+                $.each(document.styleSheets, function(sheetIndex, sheet) {
+                    // console.log("Looking at styleSheet[" + sheetIndex + "]:"); //Give the different stylesheets available in the document
+                    $.each(sheet.cssRules || sheet.rules, function(ruleIndex, rule) {
+                        if (rule.cssText.match(test)) {
+                            matchi.push("rule[" + ruleIndex + "]: " + rule.cssText);
+                        };
+                        
+                    });
                 });
-                
-                
-                // var styler = $(".text1").css();
-                // console.log(styler);
+                if (matchi.length>0) {
+                    console.log(matchi[0]);
+                }
+
+               
                 classi = test;
                 topi = $(this).position().top;
                 lefti = $(this).position().left;
                 console.log(classi, topi, lefti, classCollector.length);
+                // Collect and check in Class collector
                 var row = [];
                 if (jQuery.isEmptyObject(classCollector)) {
                     row.push(classi);
@@ -5621,6 +5633,10 @@ $("<style>")
         });
     });
 })
+
+
+
+
 // Gets all CSS values - huge list
 // $.fn.getStyleObject = function(){
 //     var dom = this.get(0);
@@ -5670,6 +5686,15 @@ $("<style>")
     //     return obj;
     // }
 
-
+$.fn.textEquals = function (text) {
+    var match = false;
+    $(this).each(function () {
+        if ($(this).text().match("^" + escapeRegex(text) + "$")) {
+            match = true;
+            return false;
+        }
+    });
+    return match;
+};
 
 
