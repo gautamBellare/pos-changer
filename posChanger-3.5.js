@@ -5548,18 +5548,59 @@ $("<style>")
                 lefti = $(this).position().left;
                 var matchi = [];   
                 // Get all css associated with the document
-                $.each(document.styleSheets, function(sheetIndex, sheet) {
-                    // console.log("Looking at styleSheet[" + sheetIndex + "]:"); //Give the different stylesheets available in the document
-                    $.each(sheet.cssRules || sheet.rules, function(ruleIndex, rule) {
-                        if (rule.cssText.match(test)) {
-                            matchi.push("rule[" + ruleIndex + "]: " + rule.cssText);
-                        };
+                // $.each(document.styleSheets, function(sheetIndex, sheet) {
+                //     // console.log("Looking at styleSheet[" + sheetIndex + "]:"); //Give the different stylesheets available in the document
+                //     $.each(sheet.cssRules || sheet.rules, function(ruleIndex, rule) {
+                //         if (rule.cssText.match(test)) {
+                //             matchi.push("rule[" + ruleIndex + "]: " + rule.cssText);
+                //         };
                         
-                    });
-                });
-                if (matchi.length>0) {
-                    console.log(matchi[0]);
+                //     });
+                // });
+                // if (matchi.length>0) {
+                //     matchi = matchi[0];
+                //     console.log(matchi[0]);
+                //     for (var key in matchi) {
+                //         console.log(key + ': ' + matchi[key];
+                //     }
+                //     // console.log(matchi[0]);
+                // }
+
+                // Get the css for the element ----- exact values
+                function css(a) {
+                    var sheets = document.styleSheets, o = {};
+                    for (var i in sheets) {
+                        var rules = sheets[i].rules || sheets[i].cssRules;
+                        for (var r in rules) {
+                            if (a.is(rules[r].selectorText)) {
+                                o = $.extend(o, css2json(rules[r].style), css2json(a.attr('style')));
+                            }
+                        }
+                    }
+                    return o;
                 }
+
+                function css2json(css) {
+                    var s = {};
+                    if (!css) return s;
+                    if (css instanceof CSSStyleDeclaration) {
+                        for (var i in css) {
+                            if ((css[i]).toLowerCase) {
+                                s[(css[i]).toLowerCase()] = (css[css[i]]);
+                            }
+                        }
+                    } else if (typeof css == "string") {
+                        css = css.split("; ");
+                        for (var i in css) {
+                            var l = css[i].split(": ");
+                            s[l[0].toLowerCase()] = (l[1]);
+                        }
+                    }
+                    return s;
+                }
+
+                var style = css($('.'+test));
+                console.log(style);
 
                
                 classi = test;
