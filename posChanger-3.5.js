@@ -36,6 +36,9 @@
 var posChangers = posChangers ? posChangers : {};
 var classCollector = [];
 var cssCollector = [];
+var sheets;
+var rules;
+var si = {};
 var ele = [];
 var searchEle = [];
 var searchEleNum = [];
@@ -4394,9 +4397,15 @@ posChangers.mopix = mopix = (function (window, undefined) {
                 for (var i=0;i<classCollector.length;i++) {
                     var rowi = classCollector[i];
                     var classesli = rowi[0];
-                    var topsli = rowi[1];
-                    var leftsli = rowi[2];
-                    $('<p>\ .'+classesli+' {\ '+topsli+';\ '+leftsli+';}</p>').appendTo('#dragPosContainer');
+                    var styli = rowi[1];
+                    var stringeri = '';
+                    jQuery.each(styli, function(obj, values) {
+                       var attributi = obj;
+                       var properti = values;
+                       stringeri += attributi +' : '+properti+'; ';
+                    });
+                    // var leftsli = rowi[2];
+                    $('<p class="showAllCssPara">\ .'+classesli+'{'+stringeri+'}</p>').appendTo('#dragPosContainer');
                 }
                 $('#dragPosContainer, .dragPosOverlay').show();
                 events.hideGuides();
@@ -5481,7 +5490,13 @@ $("<style>")
         right: 5px;\
         top: 5px;\
         color: #fff;\
+        z-index: 100;\
         '-webkit-user-select': 'none';\
+    }\
+    .showAllCssPara {\
+        padding: 8px 60px 0px 10px;\
+        font-size: 13px;\
+        position: relative;\
     }\
     #dragPosContainer {\
         display: none;\
@@ -5499,14 +5514,16 @@ $("<style>")
     
     $('body').prepend('<div class="dragPosOverlay"></div>');
     $('<div id="dragPosContainer"><div id="dragCloseBtne">✗</div></div>').appendTo('body');
-    $('#dragCloseBtne').click(function(){
+    $('#dragCloseBtne').on( "click", function() {
+        console.log('does this work');
+        $('#dragPosContainer p').remove();
         $('#dragPosContainer, .dragPosOverlay').hide();
-        $('#dragPosContainer p').empty();
+        
 
     });
 
-    $(document).bind("touchstart", function (e) {
-        $("body *").removeClass('myDrCo');
+    $('#wrapper').bind("touchstart", function (e) {
+        $("#wrapper *").removeClass('myDrCo');
         var test = $(e.originalEvent.targetTouches[0].target).attr('class');
         if (test === undefined) {
             test = $(e.originalEvent.targetTouches[0].target).attr('id');
@@ -5565,12 +5582,13 @@ $("<style>")
                 //     }
                 //     // console.log(matchi[0]);
                 // }
-
-                // Get the css for the element ----- exact values
+                // ------------------------------------------------------------------------------------
+                // Get the css for the element ----- exact values ---- Works in firefox but does not give output in chrome or safari
                 function css(a) {
-                    var sheets = document.styleSheets, o = {};
+                    sheets = document.styleSheets, o = {};
+                    alert.log(sheets);
                     for (var i in sheets) {
-                        var rules = sheets[i].rules || sheets[i].cssRules;
+                        rules = sheets[i].rules || sheets[i].CSSStyleRule;
                         for (var r in rules) {
                             if (a.is(rules[r].selectorText)) {
                                 o = $.extend(o, css2json(rules[r].style), css2json(a.attr('style')));
@@ -5581,38 +5599,47 @@ $("<style>")
                 }
 
                 function css2json(css) {
-                    var s = {};
-                    if (!css) return s;
+                    si = {};
+                    if (!css) return si;
                     if (css instanceof CSSStyleDeclaration) {
                         for (var i in css) {
                             if ((css[i]).toLowerCase) {
-                                s[(css[i]).toLowerCase()] = (css[css[i]]);
+                                si[(css[i]).toLowerCase()] = (css[css[i]]);
                             }
                         }
                     } else if (typeof css == "string") {
                         css = css.split("; ");
                         for (var i in css) {
                             var l = css[i].split(": ");
-                            s[l[0].toLowerCase()] = (l[1]);
+                            si[l[0].toLowerCase()] = (l[1]);
                         }
                     }
-                    return s;
+                    return si;
                 }
 
-                var style = css($('.'+test));
-                console.log(style);
+                var style = css($('.text1'));
+                alert(style);
+                // --------------------------------------------------------------------------------------
+               //  document.getElementById ("myLink").disabled = false;
+               // var linkTag = document.getElementById ("myLink");
 
-               
-                classi = test;
-                topi = $(this).position().top;
-                lefti = $(this).position().left;
-                console.log(classi, topi, lefti, classCollector.length);
+               //  // the imported style sheet
+               //  var importedSheet = linkTag.sheet ? linkTag.sheet : linkTag.styleSheet;
+        
+               //      // the first rule in the style sheet
+               //  var rules = importedSheet.cssRules ? importedSheet.cssRules : importedSheet.rules;
+               //  var firstRule = rules[0];
+
+                // classi = test;
+                // topi = $(this).position().top;
+                // lefti = $(this).position().left;
+                // console.log(classi, topi, lefti, classCollector.length);
                 // Collect and check in Class collector
                 var row = [];
                 if (jQuery.isEmptyObject(classCollector)) {
-                    row.push(classi);
-                    row.push(topi);
-                    row.push(lefti);
+                    row.push(test);
+                    row.push(style);
+                    // row.push(lefti);
                     // classCollector.push(row);
                     collectingArr();
                     j = 1;
@@ -5622,29 +5649,28 @@ $("<style>")
                         var rowi = classCollector[i];
                         if (rowi[0].match(test)){
                             console.log('found');
-                            rowi[1] = topi;
-                            rowi[2] = lefti;
+                            rowi[1] = style;
+                            // rowi[2] = lefti;
                             j = 1;
                         }
                     }
                 }
                 if (j === 0){
                     console.log('its here');
-                    row.push(classi);
-                    row.push(topi);
-                    row.push(lefti);
+                    row.push(test);
+                    row.push(style);
                     collectingArr();
                 }
+                console.log(classCollector);
                 
-                
-                // stack in array the values
+                // // stack in array the values
                 function collectingArr(){
                     classCollector.push(row);
                 }
                 
 
-                 //collecting all values 
-                console.log(classCollector);
+                //  //collecting all values 
+                // console.log(classCollector);
                 //collect entire string available in div for checking duplicacy
                 // var ContP = $('#dragPosContainer').text();
                 // console.log(ContP);
@@ -5727,15 +5753,15 @@ $("<style>")
     //     return obj;
     // }
 
-$.fn.textEquals = function (text) {
-    var match = false;
-    $(this).each(function () {
-        if ($(this).text().match("^" + escapeRegex(text) + "$")) {
-            match = true;
-            return false;
-        }
-    });
-    return match;
-};
+// $.fn.textEquals = function (text) {
+//     var match = false;
+//     $(this).each(function () {
+//         if ($(this).text().match("^" + escapeRegex(text) + "$")) {
+//             match = true;
+//             return false;
+//         }
+//     });
+//     return match;
+// };
 
 
